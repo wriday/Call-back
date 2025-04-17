@@ -1,15 +1,35 @@
 const express = require("express");
+const admin = require("firebase-admin");
 const app = express();
+require("dotenv").config();
 
-app.get("/reward", (req, res) => {
+// Initialize Firebase
+admin.initializeApp({
+  credential: admin.credential.cert(JSON.parse(process.env.FIREBASE_KEY)),
+  databaseURL: process.env.FIREBASE_DB
+});
+
+const db = admin.database();
+
+app.get("/reward", async (req, res) => {
   const { user_id, reward_amount, transaction_id } = req.query;
 
-  // Log reward
-  console.log(`User ${user_id} earned ${reward_amount} points. TxID: ${transaction_id}`);
+  if (!user_id || !reward_amount) return res.status(400).send("Missing parameters");
 
-  // TODO: Update points in your database (like Firebase) here
+  try {
+    const ref = db.ref(`users/${user_id}/points`);
+    const snapshot = await ref.once("value");
+    const currentPoints = snapshot.val() || 0;
+    const updatedPoints = parseInt(currentPoints) + parseInt(reward_amount);
 
-  res.status(200).send("OK");
+    await ref.set(updatedPoints);
+
+    console.log(`Updated points for ${user_id} to ${updatedPoints}`);
+    res.status(200).send("Reward updated");
+  } catch (e) {
+    console.error("Error updating points:", e);
+    res.status(500).send("Error updating points");
+  }
 });
 
 const PORT = process.env.PORT || 3000;
