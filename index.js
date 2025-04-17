@@ -1,7 +1,6 @@
 const express = require("express");
 const admin = require("firebase-admin");
 const app = express();
-require("dotenv").config();
 
 // Initialize Firebase
 admin.initializeApp({
