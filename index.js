@@ -10,7 +10,13 @@ admin.initializeApp({
 
 const db = admin.database();
 
-app.get("/reward", async (req, res) => {
+// GET endpoint for testing webhook
+app.get("/theoremreach", (req, res) => {
+  res.status(200).send("TheoremReach webhook is live!");
+});
+
+// POST endpoint to reward user
+app.post("/theoremreach", async (req, res) => {
   const { user_id, reward_amount, transaction_id } = req.query;
 
   if (!user_id || !reward_amount) return res.status(400).send("Missing parameters");
